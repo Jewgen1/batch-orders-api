@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: batch-orders-api
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/jewgeni123/batch-orders-api.git
+  ref:
+    branch: main

@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: batch-orders-api
+  namespace: batch-orders
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./chart
+      sourceRef:
+        kind: GitRepository
+        name: batch-orders-api
+        namespace: flux-system
+      reconcileStrategy: Revision
+  values:
+    image:
+      repository: 192.168.122.221/lab/batch-orders-api
+      tag: v0.1.0
+      pullPolicy: IfNotPresent
+
+    service:
+      type: ClusterIP
+      port: 8000
+
+    env:
+      DB_HOST: batch-orders-db-rw.batch-orders.svc.cluster.local
+      DB_PORT: "5432"
+      DB_NAME: app
+      DB_USER: appuser
+
+    secret:
+      name: batch-orders-db-app
+      key: password
+
+    resources: {}

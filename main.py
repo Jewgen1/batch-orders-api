@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import os
 import psycopg
 from psycopg.rows import dict_row
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Batch Orders API")
 
@@ -44,6 +45,7 @@ def init_db():
 @app.on_event("startup")
 def startup():
     init_db()
+    Instrumentator().instrument(app).expose(app)
 
 
 class OrderCreate(BaseModel):

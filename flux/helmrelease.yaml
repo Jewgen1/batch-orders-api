@@ -16,7 +16,7 @@ spec:
   values:
     image:
       repository: 192.168.122.221/lab/batch-orders-api
-      tag: v0.1.0
+      tag: v0.2.0
       pullPolicy: IfNotPresent
 
     service:

@@ -6,6 +6,7 @@ from psycopg.rows import dict_row
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Batch Orders API")
+Instrumentator().instrument(app).expose(app)
 
 
 DB_HOST = os.getenv("DB_HOST", "batch-orders-db-rw")
@@ -45,7 +46,6 @@ def init_db():
 @app.on_event("startup")
 def startup():
     init_db()
-    Instrumentator().instrument(app).expose(app)
 
 
 class OrderCreate(BaseModel):

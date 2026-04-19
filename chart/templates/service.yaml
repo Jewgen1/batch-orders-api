@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: batch-orders-api
   namespace: batch-orders
+  labels:
+    app: batch-orders-api
 spec:
   selector:
     app: batch-orders-api

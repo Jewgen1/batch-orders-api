@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: batch-orders-api
+  namespace: batch-orders
+spec:
+  selector:
+    app: batch-orders-api
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: {{ .Values.service.type }}

@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import os
 import psycopg
@@ -6,6 +9,8 @@ from psycopg.rows import dict_row
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="Batch Orders API")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 Instrumentator().instrument(app).expose(app)
 
 
@@ -14,6 +19,11 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "app")
 DB_USER = os.getenv("DB_USER", "appuser")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+
+APP_VERSION = os.getenv("APP_VERSION", "local-dev")
+POD_NAME = os.getenv("POD_NAME", "local")
+NODE_NAME = os.getenv("NODE_NAME", "local")
+POD_NAMESPACE = os.getenv("POD_NAMESPACE", "local")
 
 
 def get_conn():
@@ -45,7 +55,10 @@ def init_db():
 
 @app.on_event("startup")
 def startup():
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"WARNING: database initialization failed: {e}")
 
 
 class OrderCreate(BaseModel):
@@ -54,6 +67,34 @@ class OrderCreate(BaseModel):
 
 class OrderStatusUpdate(BaseModel):
     status: str
+
+@app.get("/", response_class=HTMLResponse)
+def portal(request: Request):
+    return templates.TemplateResponse("portal.html", {"request": request})
+
+
+@app.get("/meta")
+def meta():
+    db_status = "unknown"
+
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                cur.fetchone()
+        db_status = "ok"
+    except Exception:
+        db_status = "error"
+
+    return {
+        "app": "batch-orders-api",
+        "display_name": "Batch Operations Portal",
+        "version": APP_VERSION,
+        "pod_name": POD_NAME,
+        "node_name": NODE_NAME,
+        "namespace": POD_NAMESPACE,
+        "db_status": db_status,
+    }
 
 
 @app.get("/health")

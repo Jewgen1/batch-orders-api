@@ -162,6 +162,21 @@ def update_order_status(order_id: int, payload: OrderStatusUpdate):
         with conn.cursor() as cur:
             cur.execute(
                 """
+                SELECT id, order_number, status, created_at
+                FROM orders
+                WHERE id = %s
+                """,
+                (order_id,),
+            )
+            old_order = cur.fetchone()
+
+            if not old_order:
+                raise HTTPException(status_code=404, detail="order not found")
+
+            old_status = old_order["status"]
+
+            cur.execute(
+                """
                 UPDATE orders
                 SET status = %s
                 WHERE id = %s
@@ -170,10 +185,21 @@ def update_order_status(order_id: int, payload: OrderStatusUpdate):
                 (payload.status, order_id),
             )
             row = cur.fetchone()
+
+            cur.execute(
+                """
+                INSERT INTO events (event_type, message)
+                VALUES (%s, %s)
+                """,
+                (
+                    "ORDER_STATUS_CHANGED",
+                    f"Order {row['order_number']} changed from {old_status} to {row['status']}",
+                ),
+            )
+
         conn.commit()
 
-    if not row:
-        raise HTTPException(status_code=404, detail="order not found")
+    return row
 
 @app.get("/events")
 def list_events():

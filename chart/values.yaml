@@ -1,6 +1,6 @@
 image:
   repository: 192.168.122.221/lab/batch-orders-api
-  tag: v0.3.1
+  tag: v0.4.0
   pullPolicy: IfNotPresent
 
 service:

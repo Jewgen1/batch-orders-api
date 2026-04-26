@@ -12,6 +12,8 @@ async function loadMeta() {
     `;
 }
 
+
+
 async function loadOrders() {
     const response = await fetch('/orders');
     const orders = await response.json();
@@ -51,5 +53,7 @@ async function createTestOrder() {
 
 loadMeta();
 loadOrders();
+loadEvents();
 
 setInterval(loadOrders, 5000);
+setInterval(loadEvents, 5000);

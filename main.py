@@ -50,6 +50,18 @@ def init_db():
                 )
                 """
             )
+
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS events (
+                    id SERIAL PRIMARY KEY,
+                    event_type TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT NOW()
+                )
+                """
+            )
+
         conn.commit()
 
 
@@ -163,4 +175,34 @@ def update_order_status(order_id: int, payload: OrderStatusUpdate):
     if not row:
         raise HTTPException(status_code=404, detail="order not found")
 
+@app.get("/events")
+def list_events():
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, event_type, message, created_at
+                FROM events
+                ORDER BY id DESC
+                LIMIT 50
+                """
+            )
+            rows = cur.fetchall()
+    return rows
+
+
+@app.post("/events/test")
+def create_test_event():
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO events (event_type, message)
+                VALUES (%s, %s)
+                RETURNING id, event_type, message, created_at
+                """,
+                ("TEST_EVENT", "Test event generated from Batch Operations Portal"),
+            )
+            row = cur.fetchone()
+        conn.commit()
     return row

@@ -147,9 +147,21 @@ def create_order(order: OrderCreate):
                     VALUES (%s, %s)
                     RETURNING id, order_number, status, created_at
                     """,
-                    (order.order_number, "NEW"),
+                    (order.order_number, "CREATED"),
                 )
                 row = cur.fetchone()
+
+                cur.execute(
+                    """
+                    INSERT INTO events (event_type, message)
+                    VALUES (%s, %s)
+                    """,
+                    (
+                        "ORDER_CREATED",
+                        f"Order {row['order_number']} created with status {row['status']}",
+                    ),
+                )
+
             conn.commit()
         return row
     except psycopg.errors.UniqueViolation:

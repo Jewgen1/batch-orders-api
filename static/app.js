@@ -28,10 +28,11 @@ async function loadOrders() {
             <td>${order.status}</td>
             <td>${order.created_at}</td>
             <td>
-                <button onclick="updateOrderStatus(${order.id}, 'IN_PROGRESS')">IN_PROGRESS</button>
-                <button onclick="updateOrderStatus(${order.id}, 'DONE')">DONE</button>
-                <button onclick="updateOrderStatus(${order.id}, 'FAILED')">FAILED</button>
-            </td>
+    		<button onclick="updateOrderStatus(${order.id}, 'RELEASED')">RELEASED</button>
+    		<button onclick="updateOrderStatus(${order.id}, 'IN_PROGRESS')">IN_PROGRESS</button>
+    		<button onclick="updateOrderStatus(${order.id}, 'COMPLETED')">COMPLETED</button>
+    		<button onclick="updateOrderStatus(${order.id}, 'BLOCKED')">BLOCKED</button>
+	    </td>
         `;
 
         tableBody.appendChild(row);
